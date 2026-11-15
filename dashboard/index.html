@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hệ thống Phiên dịch Thủ ngữ IoT — Quản trị & Giám sát</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/vendor/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- ==================== TOP HEADER & NAVIGATION ==================== -->
+<header class="topbar">
+  <div class="topbar-main">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">SL</div>
+      <div>
+        <div class="brand-title">
+          <h1>Hệ thống Phiên dịch Thủ ngữ IoT</h1>
+          <span class="version-chip">Realtime</span>
+        </div>
+        <p class="brand-sub">Camera (Flex + IMU) &rarr; Edge Gateway &rarr; MQTT Broker &rarr; Cloud AI &rarr; Dashboard</p>
+      </div>
+    </div>
+
+    <div class="topbar-actions">
+      <div class="action-group edge-ctl">
+        <span class="group-label">Nguồn Edge</span>
+        <select id="edge-source" title="Nguồn dữ liệu cho Edge Gateway">
+          <option value="camera">Camera thật</option>
+          <option value="synthetic">Bàn tay ảo</option>
+        </select>
+        <button id="btn-edge" class="btn primary small">Bật Edge</button>
+      </div>
+
+      <div class="action-group voice-ctl">
+        <select id="tts-mode" title="Nguồn đọc giọng nói tiếng Việt">
+          <option value="auto">Giọng đọc: Tự động</option>
+          <option value="browser">Trình duyệt (Web Speech)</option>
+          <option value="gtts">Cloud (Google TTS)</option>
+        </select>
+        <button id="btn-voice" class="btn secondary small">Bật giọng nói</button>
+      </div>
+
+      <div class="status-cluster">
+        <span class="pill" id="pill-ws"><i class="dot"></i>WebSocket</span>
+        <span class="pill" id="pill-mqtt"><i class="dot"></i>MQTT</span>
+        <span class="pill" id="pill-edge"><i class="dot"></i>Edge offline</span>
+        <span class="pill neutral" id="pill-rate">0.0 msg/s</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Primary Navigation Tabs -->
+  <nav class="primary-tabs" role="tablist" aria-label="Điều hướng chính">
+    <button class="nav-tab active" data-tab="live" role="tab">
+      <span>Phiên dịch trực tiếp</span>
+      <em class="tab-badge live-dot">LIVE</em>
+    </button>
+    <button class="nav-tab" data-tab="telemetry" role="tab">
+      <span>Giám sát IoT &amp; Mạng</span>
+    </button>
+    <button class="nav-tab" data-tab="ai" role="tab">
+      <span>Mô hình AI &amp; Thống kê</span>
+    </button>
+    <button class="nav-tab" data-tab="crm" role="tab">
+      <span>Quản lý dữ liệu</span>
+      <em class="tab-badge" id="badge-total-records">0</em>
+    </button>
+    <button class="nav-tab" data-tab="guide" role="tab">
+      <span>Hướng dẫn sử dụng</span>
+    </button>
+  </nav>
+</header>
+
+<!-- ==================== KPI RIBBON ==================== -->
+<section class="kpi-ribbon">
+  <div class="kpi-tile accent-cyan">
+    <div class="kpi-meta">
+      <span>Chế độ đang chạy</span>
+      <strong id="ribbon-mode">Chữ cái</strong>
+    </div>
+    <small id="ribbon-hand" class="kpi-tag">Chưa thấy tay</small>
+  </div>
+  <div class="kpi-tile accent-emerald">
+    <div class="kpi-meta">
+      <span>Độ trễ End-to-End</span>
+      <strong id="ribbon-e2e">- ms</strong>
+    </div>
+    <small id="ribbon-sla" class="kpi-tag ok">Mục tiêu &lt; 500 ms</small>
+  </div>
+  <div class="kpi-tile accent-violet">
+    <div class="kpi-meta">
+      <span>Độ chính xác Mô hình</span>
+      <strong id="ribbon-acc">-</strong>
+    </div>
+    <small id="ribbon-model-sub">MLP Classifier</small>
+  </div>
+  <div class="kpi-tile accent-amber">
+    <div class="kpi-meta">
+      <span>Tỷ lệ nhận gói MQTT</span>
+      <strong id="ribbon-pdr">- %</strong>
+    </div>
+    <small id="ribbon-packets">0 gói đã nhận</small>
+  </div>
+</section>
+
+<!-- ==================== WORKSPACE PANELS ==================== -->
+<div class="workspace">
+
+  <!-- ================================================================
+       TAB 1: PHIÊN DỊCH TRỰC TIẾP
+       ================================================================ -->
+  <section class="tab-panel active" id="tab-live">
+    <div class="subbar">
+      <div class="subtabs" data-parent="live">
+        <button class="subtab active" data-subtab="live-studio">Bàn phiên dịch thời gian thực</button>
+        <button class="subtab" data-subtab="live-dictionary">Bảng tra cứu cử chỉ &amp; Ảnh mẫu</button>
+      </div>
+      <div class="subbar-right">
+        <button class="btn ghost small" data-goto-tab="guide">Xem hướng dẫn thao tác</button>
+      </div>
+    </div>
+
+    <!-- Subtab 1.1: Live Studio -->
+    <div class="subpanel active" id="sub-live-studio">
+      <div class="studio-grid">
+        <!-- Main translation card -->
+        <div class="card translate-card">
+          <div class="card-head">
+            <div class="head-left">
+              <h2>Kết quả phiên dịch trực tiếp</h2>
+              <div class="segmented" id="mode-switch">
+                <button data-mode="letters">Đánh vần Chữ cái</button>
+                <button data-mode="words">Cử chỉ Từ ngữ</button>
+              </div>
+            </div>
+            <div class="controls">
+              <label class="check"><input type="checkbox" id="speak-letters"> Đọc từng chữ cái</label>
+            </div>
+          </div>
+
+          <div class="hero-result">
+            <div class="hero-main">
+              <span class="eyebrow">NHẬN DIỆN ỔN ĐỊNH</span>
+              <div id="result-text" class="result-text muted">Hãy đánh vần...</div>
+              <div class="result-meta">
+                <span id="result-label">Đang chờ tín hiệu từ Edge...</span>
+                <span id="result-hand" class="tag">Chưa thấy tay</span>
+              </div>
+            </div>
+            <div class="hero-side">
+              <div class="conf-head">
+                <span>Độ tin cậy tức thời</span>
+                <b id="conf-pct">0%</b>
+              </div>
+              <div class="conf"><div id="conf-bar"></div></div>
+              <div class="eyebrow mt-10">TOP 3 DỰ ĐOÁN GẦN NHẤT</div>
+              <div id="top3" class="top3"><span>Chưa có dữ liệu</span></div>
+            </div>
+          </div>
+
+          <!-- Spelling composer -->
+          <div class="spell" id="spell-panel">
+            <div class="spell-top">
+              <div>
+                <span class="eyebrow">TỪ ĐANG ĐÁNH VẦN</span>
+                <div id="spell-current" class="spell-current">...</div>
+              </div>
+              <div class="spell-actions">
+                <button class="btn primary small" data-action="space" title="Hoặc xòe 5 ngón tay trước camera">Xong từ</button>
+                <button class="btn ghost small" data-action="backspace" title="Hoặc nắm tay chĩa ngón cái xuống">Xóa 1 chữ</button>
+                <button class="btn ghost small" data-action="clear">Xóa từ</button>
+              </div>
+            </div>
+
+            <div class="hold-box">
+              <div class="hold-info">
+                <span id="hold-text" class="hold-text">Giữ yên tay để nhận chữ</span>
+                <label class="slider-ctl" title="Tăng nếu hay nhận nhầm lúc chuyển tay; giảm nếu muốn gõ nhanh hơn">
+                  <span>Độ trễ giữ chữ:</span>
+                  <input type="range" id="hold-ms" min="300" max="2000" step="100" value="700">
+                  <b id="hold-ms-val">0.7s</b>
+                </label>
+              </div>
+              <div class="hold-track"><div id="hold-bar"></div></div>
+            </div>
+
+            <div class="quick-gesture-pills">
+              <span><b>Ngón cái chỉ xuống:</b> Xóa chữ (giữ để xóa tiếp)</span>
+              <span><b>Xòe 5 ngón:</b> Chốt từ &amp; đọc to</span>
+              <span><b>Giữ ngón trỏ 0.5s rồi vẽ:</b> Dấu thanh / dấu trăng</span>
+              <span><b>Bỏ tay 1.5s:</b> Tự động chốt từ</span>
+            </div>
+          </div>
+
+          <!-- Sentence transcript -->
+          <div class="transcript-wrap">
+            <div class="transcript-head">
+              <span class="eyebrow">VĂN BẢN ĐÃ DỊCH TRONG PHIÊN</span>
+              <div class="transcript-btns">
+                <button id="btn-copy-transcript" class="btn ghost xs">Sao chép</button>
+                <button id="btn-speak-all" class="btn ghost xs">Đọc cả câu</button>
+                <button id="btn-clear" class="btn ghost xs">Xóa câu</button>
+              </div>
+            </div>
+            <div id="transcript" class="transcript"><em class="placeholder">Các từ sau khi chốt sẽ nối thành câu tại đây...</em></div>
+          </div>
+        </div>
+
+        <!-- Right column: quick reference & recent history -->
+        <aside class="studio-side">
+          <div class="card compact-ref">
+            <div class="card-head">
+              <h2>Ảnh tham chiếu nhanh</h2>
+              <button class="btn ghost xs" data-goto-sub="live-dictionary">Tra cứu chi tiết &rarr;</button>
+            </div>
+            <div id="ref-image" class="ref-thumbs">
+              <figure>
+                <img class="ref-image" src="/static/assets/vsl_alphabet.png" alt="Bảng 23 chữ cái ngón tay tiếng Việt">
+                <figcaption>23 chữ cái ngón tay tiếng Việt</figcaption>
+              </figure>
+              <figure>
+                <img class="ref-image" src="/static/assets/vsl_marks.png?v=2" alt="Bảng dấu phụ và dấu thanh">
+                <figcaption>Dấu mũ, móc, trăng &amp; 5 dấu thanh</figcaption>
+              </figure>
+            </div>
+            <div id="words-ref-note" class="callout hidden">
+              <b>Chế độ Từ ngữ (12 câu giao tiếp):</b> Giữ hoặc vẫy bàn tay theo danh sách cử chỉ. Chuyển sang mục <i>Bảng tra cứu cử chỉ</i> để xem mô tả từng câu.
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <h2>Từ / câu vừa dịch gần đây</h2>
+              <button class="btn ghost xs" data-goto-tab="crm">Quản lý dữ liệu &rarr;</button>
+            </div>
+            <ul id="mini-history" class="mini-feed">
+              <li class="empty">Chưa có bản ghi phiên dịch nào.</li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- Subtab 1.2: Dictionary & Reference -->
+    <div class="subpanel" id="sub-live-dictionary">
+      <div class="dict-grid">
+        <div class="card">
+          <div class="card-head">
+            <h2 id="guide-title">Danh mục cử chỉ hệ thống</h2>
+            <input type="search" id="guide-search" class="input small" placeholder="Tìm chữ cái, dấu, từ ngữ...">
+          </div>
+          <ul id="guide" class="guide"></ul>
+        </div>
+        <div class="card">
+          <h2>Poster chuẩn Thủ ngữ Tiếng Việt</h2>
+          <p class="hint">Đối chiếu trực tiếp dáng bàn tay của bạn trước webcam với 2 bảng chuẩn dưới đây.</p>
+          <img class="ref-image large" src="/static/assets/vsl_alphabet.png" alt="Bảng chữ cái ngón tay tiếng Việt">
+          <img class="ref-image large" src="/static/assets/vsl_marks.png?v=2" alt="Dấu phụ và dấu thanh">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================
+       TAB 2: GIÁM SÁT IOT & MẠNG
+       ================================================================ -->
+  <section class="tab-panel" id="tab-telemetry">
+    <div class="subbar">
+      <div class="subtabs" data-parent="telemetry">
+        <button class="subtab active" data-subtab="tel-sensors">Cảm biến Flex &amp; IMU</button>
+        <button class="subtab" data-subtab="tel-latency">Độ trễ End-to-End</button>
+        <button class="subtab" data-subtab="tel-mqtt">Hạ tầng kết nối MQTT</button>
+      </div>
+      <span class="subbar-hint">Luồng đo thời gian thực từ thiết bị Edge (tối đa 120 mẫu gần nhất)</span>
+    </div>
+
+    <!-- Subtab 2.1: Sensors -->
+    <div class="subpanel active" id="sub-tel-sensors">
+      <div class="two-col">
+        <div class="card">
+          <div class="card-head">
+            <h2>Cảm biến uốn 5 ngón tay (Flex Sensors mô phỏng)</h2>
+            <span class="tag">Đơn vị: Độ (0° duỗi &rarr; 180° gập)</span>
+          </div>
+          <div class="chart tall"><canvas id="chart-flex"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <h2>Cảm biến quán tính bàn tay (IMU 6 trục mô phỏng)</h2>
+            <span class="tag">Roll / Pitch &amp; Vận tốc lòng bàn tay</span>
+          </div>
+          <div class="chart tall"><canvas id="chart-imu"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Subtab 2.2: Latency -->
+    <div class="subpanel" id="sub-tel-latency">
+      <div class="two-col asym">
+        <div class="card">
+          <h2>Chỉ số Độ trễ Toàn trình (SLA)</h2>
+          <div class="kpi-hero">
+            <div>
+              <span class="eyebrow">HIỆN TẠI</span>
+              <div class="kpi-big"><span id="e2e-now">-</span><small>ms</small></div>
+            </div>
+            <div id="e2e-badge" class="badge">Mục tiêu &lt; 500 ms</div>
+          </div>
+          <div class="kpi-grid">
+            <div><label>Trung bình</label><b id="e2e-avg">-</b></div>
+            <div><label>Phân vị P95</label><b id="e2e-p95">-</b></div>
+            <div><label>Cực đại (Max)</label><b id="e2e-max">-</b></div>
+            <div><label>Đạt SLA &lt; 500ms</label><b id="e2e-under">-</b></div>
+          </div>
+          <h3>Phân rã từng chặng (gói mới nhất)</h3>
+          <div class="breakdown">
+            <div><label>1. Edge xử lý ảnh</label><b id="lat-edge">-</b></div>
+            <div><label>2. Edge &rarr; Cloud (MQTT)</label><b id="lat-net">-</b></div>
+            <div><label>3. Suy luận AI (MLP)</label><b id="lat-ai">-</b></div>
+            <div><label>4. Tổng Cloud pipeline</label><b id="lat-cloud">-</b></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>Biểu đồ Độ trễ End-to-End theo thời gian</h2>
+            <span class="tag">Đường đứt đỏ = Ngưỡng mục tiêu 500 ms</span>
+          </div>
+          <div class="chart tall"><canvas id="chart-latency"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Subtab 2.3: MQTT -->
+    <div class="subpanel" id="sub-tel-mqtt">
+      <div class="two-col asym">
+        <div class="card">
+          <h2>Độ ổn định đường truyền MQTT</h2>
+          <div class="kpi-grid">
+            <div><label>Tổng gói đã nhận</label><b id="mq-total">-</b></div>
+            <div><label>Gói thất lạc</label><b id="mq-lost">-</b></div>
+            <div><label>Tỷ lệ nhận (PDR)</label><b id="mq-pdr">-</b></div>
+            <div><label>Số lần kết nối lại</label><b id="mq-reconnect">-</b></div>
+          </div>
+          <div class="callout mt-14">
+            <b id="mq-broker">Broker: -</b>
+            <p class="hint mb-0">Kiểm tra mất gói dựa trên khoảng trống số thứ tự <code>seq_id</code> của từng phiên Edge.</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <h2>Thông lượng bản tin MQTT (Messages / giây)</h2>
+            <span class="tag">Mục tiêu cấu hình: 15 Hz</span>
+          </div>
+          <div class="chart tall"><canvas id="chart-rate"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================
+       TAB 3: MÔ HÌNH AI & THỐNG KÊ
+       ================================================================ -->
+  <section class="tab-panel" id="tab-ai">
+    <div class="subbar">
+      <div class="subtabs" data-parent="ai">
+        <button class="subtab active" data-subtab="ai-perf">Hiệu năng Mô hình AI</button>
+        <button class="subtab" data-subtab="ai-freq">Phân bố Từ vựng &amp; Tần suất</button>
+      </div>
+      <div class="subbar-right">
+        <button id="btn-reload-model" class="btn secondary small">Nạp lại mô hình vừa train</button>
+      </div>
+    </div>
+
+    <!-- Subtab 3.1: Model performance -->
+    <div class="subpanel active" id="sub-ai-perf">
+      <div class="two-col">
+        <div class="card">
+          <h2>Thông số Mô hình đang hoạt động</h2>
+          <div class="kpi-grid">
+            <div><label>Mô hình chế độ hiện tại</label><b id="acc-model-name">-</b></div>
+            <div><label>Accuracy tập Test</label><b id="acc-model">-</b></div>
+            <div><label>Accuracy luồng có nhãn</label><b id="acc-stream">-</b></div>
+            <div><label>Số mẫu luồng đã chấm</label><b id="acc-samples">-</b></div>
+          </div>
+          <p class="hint" id="acc-eval">-</p>
+          <div class="callout">
+            <b>Phương pháp kiểm định chống rò rỉ dữ liệu:</b>
+            Hệ thống tách riêng ~20% phiên ghi hoàn toàn mới (chưa từng đưa vào tập huấn luyện hay tăng cường dữ liệu) để đo độ chính xác thực tế.
+          </div>
+          <h3>Độ chính xác luồng theo từng lớp (khi chạy Bàn tay ảo / Benchmark)</h3>
+          <div id="acc-per-class" class="per-class"></div>
+        </div>
+
+        <div class="card">
+          <h2>Tổng quan 3 Mô hình trong Hệ thống</h2>
+          <div id="all-models-cards" class="model-stack"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Subtab 3.2: Frequency -->
+    <div class="subpanel" id="sub-ai-freq">
+      <div class="card">
+        <div class="card-head">
+          <h2>Tần suất các cử chỉ / từ đã phiên dịch (Cloud Big Data)</h2>
+          <span class="tag" id="db-total">Tổng log: -</span>
+        </div>
+        <div class="chart xtall"><canvas id="chart-freq"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================
+       TAB 4: QUẢN LÝ DATA (CRM)
+       ================================================================ -->
+  <section class="tab-panel" id="tab-crm">
+    <div class="subbar">
+      <div class="subtabs" data-parent="crm">
+        <button class="subtab active" data-subtab="crm-translations">Lịch sử Phiên dịch</button>
+        <button class="subtab" data-subtab="crm-sensor-logs">Nhật ký Cảm biến thô (SQLite)</button>
+        <button class="subtab" data-subtab="crm-dataset">Kho Mẫu Huấn luyện &amp; Ảnh Báo cáo</button>
+      </div>
+      <div class="subbar-right">
+        <button id="btn-refresh-crm" class="btn ghost small">Làm mới</button>
+        <button id="btn-export-csv" class="btn secondary small">Xuất CSV</button>
+        <button id="btn-reset" class="btn danger small">Xóa DB Log</button>
+      </div>
+    </div>
+
+    <!-- Subtab 4.1: Translations CRM table -->
+    <div class="subpanel active" id="sub-crm-translations">
+      <div class="card">
+        <div class="crm-toolbar">
+          <div class="toolbar-left">
+            <input type="search" id="crm-search" class="input" placeholder="Tìm theo văn bản, mã nhãn, thiết bị...">
+            <select id="crm-type-filter">
+              <option value="all">Tất cả loại bản ghi</option>
+              <option value="spell">Từ ghép đánh vần (SPELL)</option>
+              <option value="word">Cử chỉ từ ngữ</option>
+            </select>
+            <select id="crm-limit">
+              <option value="50">Hiển thị 50 dòng</option>
+              <option value="150" selected>Hiển thị 150 dòng</option>
+              <option value="500">Hiển thị 500 dòng</option>
+            </select>
+          </div>
+          <span class="crm-count" id="crm-trans-count">0 bản ghi</span>
+        </div>
+        <div class="table-wrap crm-table">
+          <table>
+            <thead>
+              <tr>
+                <th>#ID</th>
+                <th>Thời gian</th>
+                <th>Thiết bị Edge</th>
+                <th>Phân loại</th>
+                <th>Văn bản phiên dịch</th>
+                <th>Độ tin cậy</th>
+                <th>Độ trễ</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="history"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Subtab 4.2: Raw Sensor Logs -->
+    <div class="subpanel" id="sub-crm-sensor-logs">
+      <div class="card">
+        <div class="crm-toolbar">
+          <div class="toolbar-left">
+            <input type="search" id="logs-search" class="input" placeholder="Lọc theo nhãn dự đoán, thiết bị, seq_id...">
+          </div>
+          <span class="crm-count" id="crm-logs-count">0 khung mẫu gần nhất</span>
+        </div>
+        <div class="table-wrap crm-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Seq ID</th>
+                <th>Thiết bị</th>
+                <th>Nhãn tức thời</th>
+                <th>Nhãn ổn định</th>
+                <th>Tin cậy</th>
+                <th>Edge (ms)</th>
+                <th>MQTT (ms)</th>
+                <th>AI (ms)</th>
+                <th>E2E (ms)</th>
+              </tr>
+            </thead>
+            <tbody id="raw-logs-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Subtab 4.3: Training Dataset & Capture Gallery -->
+    <div class="subpanel" id="sub-crm-dataset">
+      <div class="dataset-kpis">
+        <div class="card mini-stat"><span>Phiên thu Camera thật</span><b id="ds-sessions">-</b></div>
+        <div class="card mini-stat"><span>Tổng khung Landmark thô</span><b id="ds-frames">-</b></div>
+        <div class="card mini-stat"><span>Ảnh chụp phục vụ Báo cáo</span><b id="ds-images">-</b></div>
+        <div class="card mini-stat"><span>Mẫu Bàn tay ảo (Từ ngữ)</span><b id="ds-syn">-</b></div>
+      </div>
+
+      <div class="two-col asym-wide mt-14">
+        <div class="card">
+          <div class="card-head">
+            <h2>Độ phủ dữ liệu theo từng Ký hiệu (<code>camera_raw.csv</code>)</h2>
+            <select id="ds-kind-filter">
+              <option value="all">Tất cả nhóm</option>
+              <option value="letter">23 Chữ cái</option>
+              <option value="mark">8 Dấu phụ &amp; Dấu thanh</option>
+              <option value="control">2 Cử chỉ điều khiển</option>
+              <option value="word">12 Cử chỉ từ ngữ</option>
+            </select>
+          </div>
+          <div class="table-wrap crm-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Mã</th>
+                  <th>Hiển thị</th>
+                  <th>Nhóm</th>
+                  <th>Số phiên</th>
+                  <th>Số khung</th>
+                  <th>Ảnh lưu</th>
+                  <th>Trạng thái dữ liệu</th>
+                </tr>
+              </thead>
+              <tbody id="ds-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Ảnh minh họa thu gần nhất (<code>dataset/images</code>)</h2>
+          <p class="hint">Tự động lưu ảnh gốc, khung xương 21 điểm và quỹ đạo ngón trỏ để chèn vào báo cáo đồ án.</p>
+          <div id="ds-gallery" class="gallery-grid"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================
+       TAB 5: HƯỚNG DẪN SỬ DỤNG
+       ================================================================ -->
+  <section class="tab-panel" id="tab-guide">
+    <div class="subbar">
+      <div class="subtabs" data-parent="guide">
+        <button class="subtab active" data-subtab="help-quickstart">Bắt đầu nhanh (4 bước)</button>
+        <button class="subtab" data-subtab="help-spelling">Cách Đánh vần &amp; Gõ dấu Tiếng Việt</button>
+        <button class="subtab" data-subtab="help-controls">Cử chỉ Điều khiển &amp; Phím tắt</button>
+        <button class="subtab" data-subtab="help-train">Thu thêm Mẫu &amp; Xử lý sự cố</button>
+      </div>
+    </div>
+
+    <!-- Subtab 5.1: Quickstart -->
+    <div class="subpanel active" id="sub-help-quickstart">
+      <div class="guide-steps">
+        <div class="card step-card">
+          <span class="step-num">Bước 1</span>
+          <h3>Bật giọng nói trên trình duyệt</h3>
+          <p>Nhấn nút <b>“Bật giọng nói”</b> ở góc trên bên phải để cấp quyền âm thanh cho trình duyệt đọc từ tiếng Việt sau khi ghép xong.</p>
+        </div>
+        <div class="card step-card">
+          <span class="step-num">Bước 2</span>
+          <h3>Khởi động Edge Camera</h3>
+          <p>Chọn nguồn <b>“Camera thật”</b> rồi bấm <b>“Bật Edge”</b> ngay trên thanh Header (không cần gõ lệnh terminal). Đợi đèn <i>Edge</i> chuyển sang màu xanh.</p>
+        </div>
+        <div class="card step-card">
+          <span class="step-num">Bước 3</span>
+          <h3>Chọn chế độ phiên dịch</h3>
+          <p>Tại tab <b>Phiên dịch trực tiếp</b>, chọn <b>Đánh vần Chữ cái</b> (ghép từng chữ + dấu thành từ bất kỳ) hoặc <b>Cử chỉ Từ ngữ</b> (12 câu giao tiếp nhanh).</p>
+        </div>
+        <div class="card step-card">
+          <span class="step-num">Bước 4</span>
+          <h3>Giữ yên tay để xác nhận</h3>
+          <p>Đưa bàn tay vào khung webcam cách 35–60 cm. <b>Giữ yên tư thế khoảng 0.7 giây</b> cho thanh tiến độ màu cam chạy đầy để hệ thống nhận chữ chính xác, không bị nhảy chữ lúc đổi tay.</p>
+        </div>
+      </div>
+
+      <div class="card mt-14">
+        <h2>Sơ đồ luồng hoạt động hệ thống IoT</h2>
+        <div class="arch-flow">
+          <div class="arch-node"><b>1. Webcam / Găng tay</b><span>21 khớp MediaPipe &rarr; Flex 5 ngón + IMU</span></div>
+          <div class="arch-arrow">&rarr;</div>
+          <div class="arch-node"><b>2. Edge Gateway</b><span>Chuẩn hóa tay trái/phải, đóng gói JSON 15 Hz</span></div>
+          <div class="arch-arrow">&rarr;</div>
+          <div class="arch-node"><b>3. MQTT Broker</b><span>Topic <code>iot/sign_language/*</code></span></div>
+          <div class="arch-arrow">&rarr;</div>
+          <div class="arch-node"><b>4. Cloud FastAPI + AI</b><span>MLP + HoldStabilizer + Quỹ đạo dấu + SQLite</span></div>
+          <div class="arch-arrow">&rarr;</div>
+          <div class="arch-node"><b>5. Web Dashboard</b><span>WebSocket &lt; 5ms, quản trị dữ liệu &amp; đọc TTS</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Subtab 5.2: Vietnamese Spelling & Diacritics -->
+    <div class="subpanel" id="sub-help-spelling">
+      <div class="two-col">
+        <div class="card">
+          <h2>Quy tắc ghép chữ và bỏ dấu Tiếng Việt</h2>
+          <ol class="clean-list">
+            <li><b>Đánh vần gốc không dấu trước, thêm dấu sau:</b> Bạn có thể thêm dấu ngay sau nguyên âm hoặc sau khi đã gõ xong cả từ — hệ thống tự động đặt dấu đúng vị trí chính tả tiếng Việt.</li>
+            <li><b>2 Dấu tĩnh (Mũ <code>^</code> và Móc <code>ư/ơ</code>):</b> Giữ yên dáng tay giống như chữ cái cho thanh màu cam chạy đầy. Cặp <code>UO</code> + Móc tự chuyển thành <code>ƯƠ</code>.</li>
+            <li><b>6 Dấu động (Trăng <code>˘</code>, Sắc, Huyền, Hỏi, Ngã, Nặng):</b>
+              <ul>
+                <li>Nắm các ngón, <b>duỗi ngón trỏ và giữ yên ~0.5 giây</b> để hệ thống mở khóa tư thế vẽ dấu.</li>
+                <li><b>Vẽ 1 nét dứt khoát</b> trên không trung theo chiều mũi tên trong ảnh mẫu rồi dừng lại.</li>
+              </ul>
+            </li>
+            <li><b>Gõ hai chữ giống nhau liên tiếp (vd <code>OO</code>, <code>TT</code>):</b> Sau khi chữ thứ nhất đã nhận, thả lỏng bàn tay khoảng 0.5 giây rồi tạo lại dáng chữ đó.</li>
+          </ol>
+        </div>
+
+        <div class="card">
+          <h2>Ví dụ thực hành ghép từ</h2>
+          <div class="example-box">
+            <div class="ex-title">Ví dụ 1: Ghép từ <b>“VIỆT”</b></div>
+            <div class="ex-steps">
+              <span>Giữ <b>V</b></span> &rarr; <span>Giữ <b>I</b></span> &rarr; <span>Giữ <b>E</b></span> &rarr; <span>Giữ <b>T</b></span> &rarr;
+              <span>Giữ dấu <b>^</b></span> &rarr; <span>Ngón trỏ vẽ nét <b>Nặng</b></span> &rarr; <span>Xòe 5 ngón <b>(Xong từ)</b></span>
+            </div>
+            <div class="ex-out">Kết quả: VIET &rarr; VIÊT &rarr; <b>VIỆT</b> (phát âm “việt”)</div>
+          </div>
+
+          <div class="example-box">
+            <div class="ex-title">Ví dụ 2: Ghép từ <b>“NGƯỜI”</b></div>
+            <div class="ex-steps">
+              <span><b>N</b></span> &rarr; <span><b>G</b></span> &rarr; <span><b>U</b></span> &rarr; <span><b>O</b></span> &rarr; <span><b>I</b></span> &rarr;
+              <span>Giữ dấu <b>Móc</b></span> &rarr; <span>Vẽ nét <b>Huyền</b></span> &rarr; <span>Bỏ tay 1.5s</span>
+            </div>
+            <div class="ex-out">Kết quả: NGUOI &rarr; NGƯƠI &rarr; <b>NGƯỜI</b></div>
+          </div>
+
+          <div class="callout mt-10">
+            <b>Mẹo chỉnh tốc độ:</b> Nếu mới tập và hay bị nhảy chữ khi đổi tay, kéo thanh <i>Độ trễ giữ chữ</i> lên <b>1.0s – 1.2s</b>. Khi đã quen tay, giảm xuống <b>0.5s – 0.6s</b> để gõ nhanh hơn.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Subtab 5.3: Controls & Shortcuts -->
+    <div class="subpanel" id="sub-help-controls">
+      <div class="two-col">
+        <div class="card">
+          <h2>Cử chỉ điều khiển không cần chạm chuột</h2>
+          <table class="simple-table">
+            <thead><tr><th>Cử chỉ tay</th><th>Cách thực hiện</th><th>Tác dụng</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><b>Xóa chữ</b></td>
+                <td>Nắm tay, chĩa thẳng ngón cái xuống đất (như nút Dislike / Like ngược)</td>
+                <td>Xóa 1 ký tự cuối. <b>Giữ nguyên tay</b> thì cứ mỗi 0.9 giây sẽ xóa tiếp 1 ký tự.</td>
+              </tr>
+              <tr>
+                <td><b>Xong từ</b></td>
+                <td>Xòe rộng cả 5 ngón tay, lòng bàn tay hướng thẳng về phía camera</td>
+                <td>Chốt từ đang đánh vần, đưa vào câu văn bản, lưu CSDL và đọc thành tiếng.</td>
+              </tr>
+              <tr>
+                <td><b>Tự chốt từ</b></td>
+                <td>Hạ tay ra khỏi khung hình camera trên 1.5 giây</td>
+                <td>Tự động chốt và đọc từ đang đánh vần mà không cần ra ký hiệu.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <h2>Phím tắt trên cửa sổ Camera Edge</h2>
+          <p class="hint">Khi cửa sổ OpenCV <i>“Edge Gateway - Thu ngu IoT”</i> đang được chọn:</p>
+          <table class="simple-table">
+            <thead><tr><th>Phím</th><th>Chức năng</th></tr></thead>
+            <tbody>
+              <tr><td><kbd>M</kbd></td><td>Chuyển đổi nhanh giữa chế độ <b>Chữ cái</b> và <b>Từ ngữ</b></td></tr>
+              <tr><td><kbd>SPACE</kbd></td><td>Chốt từ đang đánh vần (tương đương nút Xong từ)</td></tr>
+              <tr><td><kbd>Backspace</kbd></td><td>Xóa 1 ký tự vừa ghép</td></tr>
+              <tr><td><kbd>C</kbd></td><td>Xóa trắng toàn bộ từ đang đánh vần</td></tr>
+              <tr><td><kbd>+</kbd> / <kbd>-</kbd></td><td>Tăng / giảm thời gian giữ yên nhận chữ (±0.1 giây)</td></tr>
+              <tr><td><kbd>Q</kbd> / <kbd>ESC</kbd></td><td>Đóng cửa sổ camera và dừng Edge Gateway</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Subtab 5.4: Retraining & Troubleshooting -->
+    <div class="subpanel" id="sub-help-train">
+      <div class="two-col">
+        <div class="card">
+          <h2>Lệnh thu bổ sung dữ liệu &amp; Huấn luyện lại</h2>
+          <p class="hint">Trước khi mở công cụ thu mẫu, hãy bấm <b>“Tắt Edge”</b> trên thanh Header để nhường webcam.</p>
+          <div class="code-block">
+            <span>1. Thu bổ sung riêng các chữ dễ nhầm (ví dụ O, V, Q, T, N):</span>
+            <code>.\.venv\Scripts\python.exe dataset/collect_data.py camera --labels O,V,Q,T,N --rounds 2</code>
+          </div>
+          <div class="code-block">
+            <span>2. Thu lại nhóm dấu hoặc cử chỉ điều khiển (tự lưu ảnh vào dataset/images):</span>
+            <code>.\.venv\Scripts\python.exe dataset/collect_data.py camera --group controls,marks --rounds 1</code>
+          </div>
+          <div class="code-block">
+            <span>3. Huấn luyện lại toàn bộ mô hình AI:</span>
+            <code>.\.venv\Scripts\python.exe cloud/train_model.py</code>
+          </div>
+          <p class="hint">Train xong, sang tab <b>Mô hình AI &amp; Thống kê</b> bấm nút <b>“Nạp lại mô hình vừa train”</b> là dùng ngay không cần tắt server.</p>
+        </div>
+
+        <div class="card">
+          <h2>Xử lý các tình huống thường gặp</h2>
+          <ul class="clean-list">
+            <li><b>Bấm “Bật Edge” báo lỗi không mở được camera:</b> Kiểm tra xem Zalo, Zoom, Teams hoặc cửa sổ <code>collect_data.py</code> có đang chiếm webcam không, đóng chúng rồi bật lại.</li>
+            <li><b>Vẽ dấu thanh nhưng không thấy dấu vào chữ:</b> Hãy nhớ <b>giữ yên ngón trỏ ~0.5 giây</b> trước khi vạch nét, và từ đang đánh vần phải có nguyên âm hợp lệ (vd dấu trăng chỉ vào chữ <code>A</code>, dấu móc chỉ vào <code>O/U</code>).</li>
+            <li><b>Không nghe thấy giọng đọc tiếng Việt:</b> Kiểm tra đã bấm nút <i>“Giọng nói: BẬT”</i> chưa; nếu trình duyệt không có giọng Việt nội bộ, đổi ô chọn sang <b>Cloud (Google TTS)</b>.</li>
+            <li><b>Độ sáng ngược làm khung xương tay rung mạnh:</b> Tránh ngồi quay lưng thẳng vào cửa sổ nắng gắt; đặt nguồn sáng chiếu vào lòng bàn tay giúp MediaPipe ổn định hơn rõ rệt.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

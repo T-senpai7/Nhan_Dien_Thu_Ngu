@@ -1,0 +1,78 @@
+{
+  "time": "2026-10-20T10:06:56",
+  "model": "MLP (test acc 99.43%)",
+  "stream": {
+    "broker": "broker.emqx.io:1883",
+    "reconnects": 0,
+    "runs": [
+      {
+        "rate_target_hz": 5.0,
+        "rate_actual_hz": 5.0,
+        "duration_s": 20.0,
+        "sent": 100,
+        "received": 100,
+        "lost": 0,
+        "pdr": 100.0,
+        "rtt_ms": {
+          "count": 100,
+          "avg": 825.77,
+          "p50": 807.88,
+          "p95": 1055.57,
+          "max": 1136.93,
+          "under_target_pct": 0.0
+        },
+        "uplink_ms": {
+          "count": 100,
+          "avg": 387.29,
+          "p50": 371.99,
+          "p95": 534.1,
+          "max": 595.34,
+          "under_target_pct": 90.0
+        },
+        "cloud_ms": {
+          "count": 100,
+          "avg": 0.85,
+          "p50": 1.0,
+          "p95": 1.46,
+          "max": 2.25,
+          "under_target_pct": 100.0
+        },
+        "stream_accuracy": 100.0
+      },
+      {
+        "rate_target_hz": 8.0,
+        "rate_actual_hz": 8.0,
+        "duration_s": 20.0,
+        "sent": 160,
+        "received": 160,
+        "lost": 0,
+        "pdr": 100.0,
+        "rtt_ms": {
+          "count": 160,
+          "avg": 702.27,
+          "p50": 691.74,
+          "p95": 841.81,
+          "max": 900.14,
+          "under_target_pct": 0.0
+        },
+        "uplink_ms": {
+          "count": 160,
+          "avg": 357.29,
+          "p50": 346.39,
+          "p95": 468.25,
+          "max": 512.44,
+          "under_target_pct": 98.12
+        },
+        "cloud_ms": {
+          "count": 160,
+          "avg": 0.91,
+          "p50": 1.0,
+          "p95": 2.0,
+          "max": 2.83,
+          "under_target_pct": 100.0
+        },
+        "stream_accuracy": 100.0
+      }
+    ]
+  }
+}

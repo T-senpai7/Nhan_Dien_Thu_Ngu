@@ -1,0 +1,420 @@
+{
+  "words": {
+    "mode": "words",
+    "model_name": "MLP",
+    "trained_at": "2026-11-14T04:16:09",
+    "accuracy": 1.0,
+    "f1_macro": 1.0,
+    "inference_ms": 0.5871415000001434,
+    "evaluation": "giu lai cac phien ghi chua tung train (~20% / nhan, it nhat 1)",
+    "n_train": 12447,
+    "n_test": 3027,
+    "n_total": 15474,
+    "labels": [
+      "CAM_ON",
+      "CHO_MOT_CHUT",
+      "DAU",
+      "DONG_Y",
+      "KHAN_CAP",
+      "KHONG",
+      "TAM_BIET",
+      "TOI_CAN_GIUP_DO",
+      "UONG_NUOC",
+      "XIN_CHAO",
+      "XIN_LOI",
+      "YEU_THUONG"
+    ],
+    "missing_labels": [],
+    "sources": {
+      "synthetic": 15474
+    },
+    "candidates": {
+      "MLP": {
+        "accuracy": 1.0,
+        "f1_macro": 1.0,
+        "train_sec": 5.819436073303223,
+        "inference_ms": 0.5871415000001434
+      },
+      "RandomForest": {
+        "accuracy": 0.9996696399074991,
+        "f1_macro": 0.9996685709014476,
+        "train_sec": 1.785555362701416,
+        "inference_ms": 9.164144499955
+      }
+    },
+    "per_class": {
+      "CAM_ON": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 248.0
+      },
+      "CHO_MOT_CHUT": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 255.0
+      },
+      "DAU": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 267.0
+      },
+      "DONG_Y": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 246.0
+      },
+      "KHAN_CAP": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 246.0
+      },
+      "KHONG": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 254.0
+      },
+      "TAM_BIET": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 269.0
+      },
+      "TOI_CAN_GIUP_DO": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 262.0
+      },
+      "UONG_NUOC": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 255.0
+      },
+      "XIN_CHAO": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 252.0
+      },
+      "XIN_LOI": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 245.0
+      },
+      "YEU_THUONG": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 228.0
+      }
+    },
+    "top_confusions": []
+  },
+  "letters": {
+    "mode": "letters",
+    "model_name": "MLP",
+    "trained_at": "2026-11-14T04:15:54",
+    "accuracy": 0.9043669187606733,
+    "f1_macro": 0.8964389346432958,
+    "inference_ms": 0.4075850000663195,
+    "evaluation": "giu lai cac phien ghi chua tung train (~20% / nhan, it nhat 1)",
+    "n_train": 23448,
+    "n_test": 4099,
+    "n_total": 35745,
+    "labels": [
+      "A",
+      "B",
+      "C",
+      "CACH",
+      "D",
+      "DD",
+      "E",
+      "G",
+      "H",
+      "I",
+      "K",
+      "L",
+      "M",
+      "MOC",
+      "MU",
+      "N",
+      "O",
+      "P",
+      "Q",
+      "R",
+      "S",
+      "T",
+      "TU_THE_DAU",
+      "U",
+      "V",
+      "X",
+      "XOA",
+      "Y"
+    ],
+    "missing_labels": [],
+    "sources": {
+      "camera": 35745
+    },
+    "candidates": {
+      "MLP": {
+        "accuracy": 0.9043669187606733,
+        "f1_macro": 0.8964389346432958,
+        "train_sec": 7.2462592124938965,
+        "inference_ms": 0.4075850000663195
+      },
+      "RandomForest": {
+        "accuracy": 0.9072944620639181,
+        "f1_macro": 0.9154555635600966,
+        "train_sec": 4.110947847366333,
+        "inference_ms": 9.846899499971187
+      }
+    },
+    "per_class": {
+      "A": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 72.0
+      },
+      "B": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 71.0
+      },
+      "C": {
+        "precision": 1.0,
+        "recall": 0.9795,
+        "f1-score": 0.9896,
+        "support": 146.0
+      },
+      "CACH": {
+        "precision": 0.6,
+        "recall": 1.0,
+        "f1-score": 0.75,
+        "support": 72.0
+      },
+      "D": {
+        "precision": 0.9856,
+        "recall": 0.932,
+        "f1-score": 0.958,
+        "support": 147.0
+      },
+      "DD": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 146.0
+      },
+      "E": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 147.0
+      },
+      "G": {
+        "precision": 1.0,
+        "recall": 0.9795,
+        "f1-score": 0.9896,
+        "support": 146.0
+      },
+      "H": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 146.0
+      },
+      "I": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 147.0
+      },
+      "K": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 146.0
+      },
+      "L": {
+        "precision": 1.0,
+        "recall": 0.8779,
+        "f1-score": 0.935,
+        "support": 131.0
+      },
+      "M": {
+        "precision": 0.7903,
+        "recall": 1.0,
+        "f1-score": 0.8829,
+        "support": 147.0
+      },
+      "MOC": {
+        "precision": 0.4128,
+        "recall": 1.0,
+        "f1-score": 0.5844,
+        "support": 71.0
+      },
+      "MU": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 72.0
+      },
+      "N": {
+        "precision": 1.0,
+        "recall": 0.7329,
+        "f1-score": 0.8458,
+        "support": 146.0
+      },
+      "O": {
+        "precision": 0.9375,
+        "recall": 0.3082,
+        "f1-score": 0.4639,
+        "support": 146.0
+      },
+      "P": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 147.0
+      },
+      "Q": {
+        "precision": 0.9718,
+        "recall": 0.4694,
+        "f1-score": 0.633,
+        "support": 147.0
+      },
+      "R": {
+        "precision": 1.0,
+        "recall": 0.9388,
+        "f1-score": 0.9684,
+        "support": 147.0
+      },
+      "S": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 146.0
+      },
+      "T": {
+        "precision": 1.0,
+        "recall": 0.6735,
+        "f1-score": 0.8049,
+        "support": 147.0
+      },
+      "TU_THE_DAU": {
+        "precision": 0.8425,
+        "recall": 0.9967,
+        "f1-score": 0.9132,
+        "support": 612.0
+      },
+      "U": {
+        "precision": 0.6376,
+        "recall": 1.0,
+        "f1-score": 0.7787,
+        "support": 146.0
+      },
+      "V": {
+        "precision": 1.0,
+        "recall": 0.4315,
+        "f1-score": 0.6029,
+        "support": 146.0
+      },
+      "X": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 146.0
+      },
+      "XOA": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 71.0
+      },
+      "Y": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 145.0
+      }
+    },
+    "top_confusions": [
+      {
+        "true": "O",
+        "pred": "MOC",
+        "count": 101
+      },
+      {
+        "true": "V",
+        "pred": "U",
+        "count": 83
+      },
+      {
+        "true": "Q",
+        "pred": "TU_THE_DAU",
+        "count": 78
+      },
+      {
+        "true": "T",
+        "pred": "CACH",
+        "count": 48
+      },
+      {
+        "true": "N",
+        "pred": "M",
+        "count": 39
+      },
+      {
+        "true": "L",
+        "pred": "TU_THE_DAU",
+        "count": 14
+      },
+      {
+        "true": "D",
+        "pred": "TU_THE_DAU",
+        "count": 10
+      },
+      {
+        "true": "R",
+        "pred": "TU_THE_DAU",
+        "count": 9
+      }
+    ]
+  },
+  "marks": {
+    "mode": "marks",
+    "model_name": "MLP",
+    "trained_at": "2026-11-14T04:16:28",
+    "accuracy": 0.9444444444444444,
+    "f1_macro": 0.942857142857143,
+    "inference_ms": 0.24493149998306762,
+    "evaluation": "giu lai ~20% lan ve chua tung train",
+    "n_train": 1057,
+    "n_test": 18,
+    "labels": [
+      "DAU_HOI",
+      "DAU_HUYEN",
+      "DAU_NANG",
+      "DAU_NGA",
+      "DAU_SAC",
+      "DAU_TRANG"
+    ],
+    "missing_labels": [],
+    "top_confusions": [
+      {
+        "true": "DAU_TRANG",
+        "pred": "DAU_NGA",
+        "count": 1
+      }
+    ]
+  }
+}

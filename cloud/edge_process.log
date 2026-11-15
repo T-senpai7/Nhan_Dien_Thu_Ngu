@@ -1,0 +1,7 @@
+[edge] Ket noi MQTT 127.0.0.1:1883 ...
+[edge] Dang doc camera. Phim: M doi che do | SPACE ket thuc tu | BACKSPACE xoa | C xoa het | Q thoat
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+W0000 00:00:1794725482.522090   18564 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1794725482.559267   29244 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1794725485.008753    7788 landmark_projection_calculator.cc:186] Using NORM_RECT without IMAGE_DIMENSIONS is only supported for the square ROI. Provide IMAGE_DIMENSIONS or use PROJECTION_MATRIX.

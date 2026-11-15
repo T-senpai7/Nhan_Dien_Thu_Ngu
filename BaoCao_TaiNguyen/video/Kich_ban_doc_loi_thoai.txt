@@ -1,0 +1,86 @@
+[00:00:00] MỞ ĐẦU
+  Chỉ với một chiếc webcam laptop, hệ thống này biến cử chỉ tay thành chữ, thành câu tiếng Việt có dấu, và đọc thành tiếng.
+  Đây là đồ án môn Công nghệ Internet of Things hiện đại: Hệ thống IoT phiên dịch thủ ngữ tiếng Việt thời gian thực.
+  Trong video này, mình sẽ đi qua tổng quan dự án và toàn bộ tech stack, từ Edge, MQTT, Cloud cho tới Dashboard.
+
+[00:00:24] 01 · BÀI TOÁN
+  Người khiếm thính giao tiếp bằng thủ ngữ, nhưng phần lớn chúng ta lại không hiểu thủ ngữ.
+  Cách làm truyền thống là găng tay gắn cảm biến uốn và cảm biến quán tính IMU, nhưng cần mạch, pin và hiệu chỉnh riêng cho từng người.
+  Nhóm chọn hướng khác: dùng webcam và MediaPipe để lấy 21 khớp bàn tay, rồi tính ra giá trị cảm biến uốn và IMU mô phỏng.
+  Gói dữ liệu giữ đúng cấu trúc của găng tay thật, nên sau này có thể thay bằng phần cứng ESP32 mà không phải sửa Cloud.
+
+[00:00:56] 02 · PHẠM VI
+  Hệ thống có hai chế độ.
+  Chế độ Chữ cái nhận 23 chữ cái ngón tay, dấu mũ, dấu móc, dấu trăng và năm dấu thanh vẽ bằng đầu ngón trỏ.
+  Thêm hai cử chỉ điều khiển: ngón cái chỉ xuống để xóa chữ, xòe năm ngón để chốt từ.
+  Chế độ Từ ngữ nhận 12 câu giao tiếp thông dụng như Xin chào, Cảm ơn, Tôi cần giúp đỡ, Khẩn cấp.
+
+[00:01:22] 03 · KIẾN TRÚC
+  Kiến trúc gồm năm khối, đi xuyên qua mọi tầng của một hệ thống IoT.
+  Thiết bị cảm nhận là webcam. Edge Gateway trên laptop xử lý ảnh và rút gọn mỗi khung hình thành 95 con số.
+  Gói tin đi qua MQTT Broker tới Cloud FastAPI, nơi mô hình AI nhận diện và ghép chữ.
+  Kết quả được đẩy lên Web Dashboard qua WebSocket, đồng thời gửi ngược về Edge để hiển thị HUD.
+  Ảnh không rời khỏi máy người dùng, chỉ có đặc trưng được gửi đi: gói tin nhỏ, nhanh và riêng tư hơn.
+
+[00:01:54] 04 · TECH STACK
+  Đây là bản đồ tech stack theo từng tầng.
+  Tầng thu nhận dùng OpenCV 4.11 và MediaPipe Hands 0.10.21, viết bằng Python 3.11 và NumPy.
+  Tầng mạng dùng MQTT 3.1.1 với thư viện paho-mqtt, cùng một broker tự viết bằng asyncio.
+  Tầng Cloud dùng FastAPI, Uvicorn và WebSocket; AI dùng scikit-learn; lưu trữ bằng SQLite; giọng nói bằng gTTS.
+  Giao diện là HTML, CSS, JavaScript thuần và Chart.js để vẽ biểu đồ thời gian thực.
+
+[00:02:23] 05 · EDGE GATEWAY
+  Bắt đầu từ Edge.
+  Mỗi khung hình 640 nhân 480 được lật gương rồi đưa vào MediaPipe Hands để lấy 21 khớp 3D.
+  Tay trái được lật thành tay phải, tọa độ lấy cổ tay làm gốc và chia cho chiều dài lòng bàn tay, để không phụ thuộc khoảng cách tới camera.
+  Từ đó Edge tính 95 đặc trưng: 5 giá trị uốn ngón, 7 giá trị IMU, 4 giá trị dao động, 60 tọa độ hình dáng và 19 khoảng cách.
+  Gói JSON khoảng 1,2 KB được gửi 15 lần mỗi giây.
+
+[00:02:55] 06 · MQTT
+  Vì sao chọn MQTT?
+  Đây là luồng telemetry tần số cao, nhiều bên nhận, cần cả chiều ngược. Theo bài giảng tuần 5, đó đúng là trường hợp của publish subscribe.
+  Hệ thống dùng bốn topic: sensor data, prediction, status và control, dưới tiền tố iot sign language.
+  QoS 0 được chọn vì khung sau thay khung trước, mất một khung không ảnh hưởng kết quả.
+  Broker nội bộ tự viết khoảng 165 dòng asyncio, giữ tỉ lệ nhận gói 100% tới tận 100 Hz.
+
+[00:03:25] 07 · CLOUD FASTAPI
+  Sang Cloud FastAPI.
+  Mô hình MLP phân loại từng khung trong chưa tới 1 mili giây.
+  Nhưng từng khung thì dễ nhầm lúc đang đổi tay, nên bộ ổn định HoldStabilizer bỏ phiếu 4 trên 5 khung, và yêu cầu giữ yên 700 mili giây.
+  Chữ được ghép vào từ. Dấu được ghép bằng chuẩn hóa Unicode NFD và NFC, theo đúng quy tắc chính tả.
+  Ví dụ: V, I, E, T, thêm dấu mũ, vẽ dấu nặng, ta được chữ VIỆT.
+
+[00:03:55] 08 · DẤU THANH
+  Dấu thanh là nét vẽ, không phải dáng tay.
+  Bộ cắt nét theo dõi vận tốc đầu ngón trỏ để tách ra một nét, lấy mẫu lại 12 điểm, tính 41 đặc trưng, rồi đưa vào một mô hình MLP riêng.
+  Đây là 15 quỹ đạo thật của mỗi dấu. Sắc, huyền, hỏi, ngã, nặng và trăng có hình dạng rất khác nhau.
+
+[00:04:18] 09 · DỮ LIỆU & MÔ HÌNH
+  Dữ liệu được thu bằng webcam thật: 176 phiên ghi, 12.795 khung hình và 864 ảnh minh họa.
+  Tập kiểm tra là các phiên ghi chưa từng dùng để huấn luyện, tránh độ chính xác ảo.
+  Kết quả: chữ cái 90,44 phần trăm, dấu động 94,44 phần trăm, từ ngữ 100 phần trăm trên dữ liệu tổng hợp.
+  MLP được chọn thay Random Forest vì nhanh hơn khoảng 24 lần, trong khi độ chính xác gần như bằng nhau.
+
+[00:04:45] 10 · LƯU TRỮ
+  Mọi thứ được lưu trong SQLite ở chế độ WAL.
+  Bảng sensor logs giữ hơn 71 nghìn gói cảm biến cùng đầy đủ mốc thời gian, bảng translations lưu kết quả dịch, bảng mqtt metrics lưu tỉ lệ nhận gói mỗi 2 giây.
+  Nhờ vậy, độ trễ từng chặng có thể tính lại bất kỳ lúc nào.
+
+[00:05:05] 11 · WEB DASHBOARD
+  Web Dashboard có năm thẻ.
+  Phiên dịch trực tiếp, hiển thị chữ đang giữ, từ đang đánh vần và văn bản đã dịch.
+  Giám sát IoT và mạng, với biểu đồ cảm biến uốn, IMU, độ trễ và thông lượng MQTT.
+  Tiếp theo là Mô hình AI và thống kê, Quản lý dữ liệu, và cuối cùng là Hướng dẫn sử dụng.
+
+[00:05:28] 12 · KẾT QUẢ ĐO
+  Còn hiệu năng thực tế thì sao?
+  Trên gần 30 nghìn gói từ camera thật, độ trễ toàn trình trung bình 18,9 mili giây, p95 là 31,8 mili giây.
+  100 phần trăm gói dưới mục tiêu 500 mili giây, và không mất gói nào.
+  Khoảng 82 phần trăm độ trễ nằm ở Edge, chủ yếu là MediaPipe. Tầng mạng MQTT chỉ chiếm chưa tới 1 mili giây.
+  Và với camera thật, hệ thống đã đánh vần trọn một câu 22 từ có dấu.
+
+[00:05:57] 13 · CHẠY THỬ & HƯỚNG PHÁT TRIỂN
+  Để chạy toàn bộ hệ thống, chỉ cần một lệnh: python run_demo.py.
+  Lệnh này khởi động broker, Cloud, Edge và mở Dashboard.
+  Hướng phát triển tiếp theo là găng tay ESP32 thật, thu thêm dữ liệu từ nhiều người và bật bảo mật TLS cho MQTT.
+  Cảm ơn mọi người đã theo dõi.

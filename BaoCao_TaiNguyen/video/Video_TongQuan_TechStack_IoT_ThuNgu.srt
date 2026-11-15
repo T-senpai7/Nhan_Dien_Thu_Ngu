@@ -1,0 +1,313 @@
+1
+00:00:00,700 --> 00:00:05,354
+Chỉ với một chiếc webcam laptop, hệ
+thống này biến cử chỉ tay thành chữ,
+
+2
+00:00:05,354 --> 00:00:08,457
+thành câu tiếng Việt có dấu, và đọc thành tiếng.
+
+3
+00:00:08,710 --> 00:00:15,946
+Đây là đồ án môn Công nghệ Internet of Things hiện đại:
+Hệ thống IoT phiên dịch thủ ngữ tiếng Việt thời gian thực.
+
+4
+00:00:16,190 --> 00:00:23,556
+Trong video này, mình sẽ đi qua tổng quan dự án và toàn
+bộ tech stack, từ Edge, MQTT, Cloud cho tới Dashboard.
+
+5
+00:00:25,260 --> 00:00:30,825
+Người khiếm thính giao tiếp bằng thủ ngữ,
+nhưng phần lớn chúng ta lại không hiểu thủ ngữ.
+
+6
+00:00:31,070 --> 00:00:36,181
+Cách làm truyền thống là găng tay gắn
+cảm biến uốn và cảm biến quán tính IMU,
+
+7
+00:00:36,181 --> 00:00:39,488
+nhưng cần mạch, pin và hiệu chỉnh riêng cho từng người.
+
+8
+00:00:39,740 --> 00:00:47,667
+Nhóm chọn hướng khác: dùng webcam và MediaPipe để lấy 21 khớp
+bàn tay, rồi tính ra giá trị cảm biến uốn và IMU mô phỏng.
+
+9
+00:00:47,920 --> 00:00:55,647
+Gói dữ liệu giữ đúng cấu trúc của găng tay thật, nên sau này
+có thể thay bằng phần cứng ESP32 mà không phải sửa Cloud.
+
+10
+00:00:57,350 --> 00:00:59,522
+Hệ thống có hai chế độ.
+
+11
+00:00:59,770 --> 00:01:07,527
+Chế độ Chữ cái nhận 23 chữ cái ngón tay, dấu mũ, dấu
+móc, dấu trăng và năm dấu thanh vẽ bằng đầu ngón trỏ.
+
+12
+00:01:07,780 --> 00:01:13,815
+Thêm hai cử chỉ điều khiển: ngón cái chỉ
+xuống để xóa chữ, xòe năm ngón để chốt từ.
+
+13
+00:01:14,060 --> 00:01:21,006
+Chế độ Từ ngữ nhận 12 câu giao tiếp thông dụng
+như Xin chào, Cảm ơn, Tôi cần giúp đỡ, Khẩn cấp.
+
+14
+00:01:22,710 --> 00:01:27,464
+Kiến trúc gồm năm khối, đi xuyên
+qua mọi tầng của một hệ thống IoT.
+
+15
+00:01:27,710 --> 00:01:34,726
+Thiết bị cảm nhận là webcam. Edge Gateway trên laptop
+xử lý ảnh và rút gọn mỗi khung hình thành 95 con số.
+
+16
+00:01:34,980 --> 00:01:40,545
+Gói tin đi qua MQTT Broker tới Cloud FastAPI,
+nơi mô hình AI nhận diện và ghép chữ.
+
+17
+00:01:40,800 --> 00:01:46,635
+Kết quả được đẩy lên Web Dashboard qua WebSocket,
+đồng thời gửi ngược về Edge để hiển thị HUD.
+
+18
+00:01:46,880 --> 00:01:53,876
+Ảnh không rời khỏi máy người dùng, chỉ có đặc trưng
+được gửi đi: gói tin nhỏ, nhanh và riêng tư hơn.
+
+19
+00:01:55,580 --> 00:01:58,562
+Đây là bản đồ tech stack theo từng tầng.
+
+20
+00:01:58,810 --> 00:02:04,834
+Tầng thu nhận dùng OpenCV 4.11 và MediaPipe
+Hands 0.10.21, viết bằng Python 3.11 và NumPy.
+
+21
+00:02:05,090 --> 00:02:10,614
+Tầng mạng dùng MQTT 3.1.1 với thư viện
+paho-mqtt, cùng một broker tự viết bằng asyncio.
+
+22
+00:02:10,860 --> 00:02:16,425
+Tầng Cloud dùng FastAPI, Uvicorn và WebSocket; AI dùng
+scikit-learn; lưu trữ bằng SQLite; giọng nói bằng gTTS.
+
+23
+00:02:16,680 --> 00:02:22,104
+Giao diện là HTML, CSS, JavaScript thuần
+và Chart.js để vẽ biểu đồ thời gian thực.
+
+24
+00:02:23,800 --> 00:02:25,800
+Bắt đầu từ Edge.
+
+25
+00:02:26,050 --> 00:02:31,735
+Mỗi khung hình 640 nhân 480 được lật gương
+rồi đưa vào MediaPipe Hands để lấy 21 khớp 3D.
+
+26
+00:02:31,990 --> 00:02:38,559
+Tay trái được lật thành tay phải, tọa độ lấy cổ
+tay làm gốc và chia cho chiều dài lòng bàn tay,
+
+27
+00:02:38,559 --> 00:02:40,948
+để không phụ thuộc khoảng cách tới camera.
+
+28
+00:02:41,190 --> 00:02:46,154
+Từ đó Edge tính 95 đặc trưng: 5
+giá trị uốn ngón, 7 giá trị IMU,
+
+29
+00:02:46,154 --> 00:02:50,498
+4 giá trị dao động, 60 tọa độ hình dáng và 19 khoảng cách.
+
+30
+00:02:50,750 --> 00:02:54,423
+Gói JSON khoảng 1,2 KB được gửi 15 lần mỗi giây.
+
+31
+00:02:56,120 --> 00:02:58,120
+Vì sao chọn MQTT?
+
+32
+00:02:58,370 --> 00:03:02,802
+Đây là luồng telemetry tần số cao,
+nhiều bên nhận, cần cả chiều ngược.
+
+33
+00:03:02,802 --> 00:03:06,917
+Theo bài giảng tuần 5, đó đúng là
+trường hợp của publish subscribe.
+
+34
+00:03:07,170 --> 00:03:12,965
+Hệ thống dùng bốn topic: sensor data, prediction,
+status và control, dưới tiền tố iot sign language.
+
+35
+00:03:13,210 --> 00:03:18,775
+QoS 0 được chọn vì khung sau thay khung
+trước, mất một khung không ảnh hưởng kết quả.
+
+36
+00:03:19,030 --> 00:03:24,865
+Broker nội bộ tự viết khoảng 165 dòng asyncio,
+giữ tỉ lệ nhận gói 100% tới tận 100 Hz.
+
+37
+00:03:26,560 --> 00:03:28,560
+Sang Cloud FastAPI.
+
+38
+00:03:28,810 --> 00:03:32,874
+Mô hình MLP phân loại từng khung trong chưa tới 1 mili giây.
+
+39
+00:03:33,120 --> 00:03:36,116
+Nhưng từng khung thì dễ nhầm lúc đang đổi tay,
+
+40
+00:03:36,116 --> 00:03:41,808
+nên bộ ổn định HoldStabilizer bỏ phiếu 4 trên
+5 khung, và yêu cầu giữ yên 700 mili giây.
+
+41
+00:03:42,060 --> 00:03:48,686
+Chữ được ghép vào từ. Dấu được ghép bằng chuẩn hóa
+Unicode NFD và NFC, theo đúng quy tắc chính tả.
+
+42
+00:03:48,940 --> 00:03:54,914
+Ví dụ: V, I, E, T, thêm dấu mũ, vẽ dấu nặng, ta được chữ VIỆT.
+
+43
+00:03:56,610 --> 00:03:59,742
+Dấu thanh là nét vẽ, không phải dáng tay.
+
+44
+00:03:59,990 --> 00:04:04,513
+Bộ cắt nét theo dõi vận tốc đầu ngón trỏ để tách ra một nét,
+
+45
+00:04:04,513 --> 00:04:09,639
+lấy mẫu lại 12 điểm, tính 41 đặc trưng,
+rồi đưa vào một mô hình MLP riêng.
+
+46
+00:04:09,890 --> 00:04:17,236
+Đây là 15 quỹ đạo thật của mỗi dấu. Sắc, huyền,
+hỏi, ngã, nặng và trăng có hình dạng rất khác nhau.
+
+47
+00:04:18,940 --> 00:04:24,955
+Dữ liệu được thu bằng webcam thật: 176 phiên
+ghi, 12.795 khung hình và 864 ảnh minh họa.
+
+48
+00:04:25,200 --> 00:04:30,765
+Tập kiểm tra là các phiên ghi chưa từng
+dùng để huấn luyện, tránh độ chính xác ảo.
+
+49
+00:04:31,020 --> 00:04:38,316
+Kết quả: chữ cái 90,44 phần trăm, dấu động 94,44 phần
+trăm, từ ngữ 100 phần trăm trên dữ liệu tổng hợp.
+
+50
+00:04:38,570 --> 00:04:44,946
+MLP được chọn thay Random Forest vì nhanh hơn khoảng
+24 lần, trong khi độ chính xác gần như bằng nhau.
+
+51
+00:04:46,640 --> 00:04:49,893
+Mọi thứ được lưu trong SQLite ở chế độ WAL.
+
+52
+00:04:50,140 --> 00:04:54,876
+Bảng sensor logs giữ hơn 71 nghìn gói
+cảm biến cùng đầy đủ mốc thời gian,
+
+53
+00:04:54,876 --> 00:04:59,909
+bảng translations lưu kết quả dịch, bảng
+mqtt metrics lưu tỉ lệ nhận gói mỗi 2 giây.
+
+54
+00:05:00,160 --> 00:05:04,644
+Nhờ vậy, độ trễ từng chặng có thể tính lại bất kỳ lúc nào.
+
+55
+00:05:06,350 --> 00:05:08,350
+Web Dashboard có năm thẻ.
+
+56
+00:05:08,600 --> 00:05:14,315
+Phiên dịch trực tiếp, hiển thị chữ đang
+giữ, từ đang đánh vần và văn bản đã dịch.
+
+57
+00:05:14,560 --> 00:05:20,425
+Giám sát IoT và mạng, với biểu đồ cảm
+biến uốn, IMU, độ trễ và thông lượng MQTT.
+
+58
+00:05:20,680 --> 00:05:27,206
+Tiếp theo là Mô hình AI và thống kê, Quản lý
+dữ liệu, và cuối cùng là Hướng dẫn sử dụng.
+
+59
+00:05:28,910 --> 00:05:31,102
+Còn hiệu năng thực tế thì sao?
+
+60
+00:05:31,350 --> 00:05:38,446
+Trên gần 30 nghìn gói từ camera thật, độ trễ toàn
+trình trung bình 18,9 mili giây, p95 là 31,8 mili giây.
+
+61
+00:05:38,700 --> 00:05:43,454
+100 phần trăm gói dưới mục tiêu 500
+mili giây, và không mất gói nào.
+
+62
+00:05:43,700 --> 00:05:50,866
+Khoảng 82 phần trăm độ trễ nằm ở Edge, chủ yếu là
+MediaPipe. Tầng mạng MQTT chỉ chiếm chưa tới 1 mili giây.
+
+63
+00:05:51,120 --> 00:05:56,144
+Và với camera thật, hệ thống đã
+đánh vần trọn một câu 22 từ có dấu.
+
+64
+00:05:57,840 --> 00:06:02,233
+Để chạy toàn bộ hệ thống, chỉ
+cần một lệnh: python run_demo.py.
+
+65
+00:06:02,480 --> 00:06:06,033
+Lệnh này khởi động broker, Cloud, Edge và mở Dashboard.
+
+66
+00:06:06,290 --> 00:06:13,476
+Hướng phát triển tiếp theo là găng tay ESP32 thật, thu
+thêm dữ liệu từ nhiều người và bật bảo mật TLS cho MQTT.
+
+67
+00:06:13,720 --> 00:06:16,162
+Cảm ơn mọi người đã theo dõi.

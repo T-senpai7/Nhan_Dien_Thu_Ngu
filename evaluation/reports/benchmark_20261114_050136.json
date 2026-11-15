@@ -1,0 +1,212 @@
+{
+  "time": "2026-11-14T05:00:51",
+  "model": "Từ ngữ: MLP (test acc 100.00%); Chữ cái: MLP (test acc 90.44%)",
+  "accuracy": {
+    "samples": 1170,
+    "accuracy": 99.83,
+    "f1_macro": 99.83,
+    "mean_confidence": 98.55,
+    "api_latency_ms": {
+      "count": 1170,
+      "avg": 3.48,
+      "p50": 3.43,
+      "p95": 4.35,
+      "max": 16.91,
+      "under_target_pct": 100.0
+    },
+    "per_class": {
+      "CAM_ON": {
+        "precision": 100.0,
+        "recall": 100.0,
+        "f1": 100.0
+      },
+      "CHO_MOT_CHUT": {
+        "precision": 100.0,
+        "recall": 100.0,
+        "f1": 100.0
+      },
+      "DAU": {
+        "precision": 100.0,
+        "recall": 100.0,
+        "f1": 100.0
+      },
+      "DONG_Y": {
+        "precision": 99.0,
+        "recall": 100.0,
+        "f1": 99.5
+      },
+      "KHAN_CAP": {
+        "precision": 100.0,
+        "recall": 100.0,
+        "f1": 100.0
+      },
+      "KHONG": {
+        "precision": 99.0,
+        "recall": 100.0,
+        "f1": 99.5
+      },
+      "TAM_BIET": {
+        "precision": 100.0,
+        "recall": 100.0,
+        "f1": 100.0
+      },
+      "TOI_CAN_GIUP_DO": {
+        "precision": 100.0,
+        "recall": 100.0,
+        "f1": 100.0
+      },
+      "UONG_NUOC": {
+        "precision": 100.0,
+        "recall": 100.0,
+        "f1": 100.0
+      },
+      "XIN_CHAO": {
+        "precision": 100.0,
+        "recall": 98.1,
+        "f1": 99.0
+      },
+      "XIN_LOI": {
+        "precision": 100.0,
+        "recall": 100.0,
+        "f1": 100.0
+      },
+      "YEU_THUONG": {
+        "precision": 100.0,
+        "recall": 100.0,
+        "f1": 100.0
+      }
+    }
+  },
+  "stream": {
+    "broker": "127.0.0.1:1883",
+    "reconnects": 0,
+    "runs": [
+      {
+        "rate_target_hz": 15.0,
+        "rate_actual_hz": 15.0,
+        "duration_s": 10.0,
+        "sent": 150,
+        "received": 150,
+        "lost": 0,
+        "pdr": 100.0,
+        "e2e_ms": {
+          "count": 150,
+          "avg": 2.12,
+          "p50": 2.02,
+          "p95": 3.06,
+          "max": 4.56,
+          "under_target_pct": 100.0
+        },
+        "rtt_ms": {
+          "count": 150,
+          "avg": 2.91,
+          "p50": 3.01,
+          "p95": 4.03,
+          "max": 5.52,
+          "under_target_pct": 100.0
+        },
+        "uplink_ms": {
+          "count": 150,
+          "avg": 1.12,
+          "p50": 1.02,
+          "p95": 2.01,
+          "max": 2.52,
+          "under_target_pct": 100.0
+        },
+        "cloud_ms": {
+          "count": 150,
+          "avg": 1.0,
+          "p50": 1.0,
+          "p95": 2.01,
+          "max": 2.07,
+          "under_target_pct": 100.0
+        },
+        "stream_accuracy": 100.0
+      },
+      {
+        "rate_target_hz": 30.0,
+        "rate_actual_hz": 30.0,
+        "duration_s": 10.0,
+        "sent": 300,
+        "received": 300,
+        "lost": 0,
+        "pdr": 100.0,
+        "e2e_ms": {
+          "count": 300,
+          "avg": 2.24,
+          "p50": 2.05,
+          "p95": 3.06,
+          "max": 4.02,
+          "under_target_pct": 100.0
+        },
+        "rtt_ms": {
+          "count": 300,
+          "avg": 3.23,
+          "p50": 3.05,
+          "p95": 4.08,
+          "max": 6.79,
+          "under_target_pct": 100.0
+        },
+        "uplink_ms": {
+          "count": 300,
+          "avg": 1.07,
+          "p50": 1.07,
+          "p95": 1.68,
+          "max": 2.55,
+          "under_target_pct": 100.0
+        },
+        "cloud_ms": {
+          "count": 300,
+          "avg": 1.17,
+          "p50": 1.0,
+          "p95": 2.01,
+          "max": 2.48,
+          "under_target_pct": 100.0
+        },
+        "stream_accuracy": 99.04
+      },
+      {
+        "rate_target_hz": 60.0,
+        "rate_actual_hz": 59.99,
+        "duration_s": 10.0,
+        "sent": 600,
+        "received": 600,
+        "lost": 0,
+        "pdr": 100.0,
+        "e2e_ms": {
+          "count": 600,
+          "avg": 2.28,
+          "p50": 2.08,
+          "p95": 3.08,
+          "max": 10.26,
+          "under_target_pct": 100.0
+        },
+        "rtt_ms": {
+          "count": 600,
+          "avg": 3.21,
+          "p50": 3.06,
+          "p95": 4.17,
+          "max": 11.26,
+          "under_target_pct": 100.0
+        },
+        "uplink_ms": {
+          "count": 600,
+          "avg": 1.18,
+          "p50": 1.07,
+          "p95": 2.01,
+          "max": 3.01,
+          "under_target_pct": 100.0
+        },
+        "cloud_ms": {
+          "count": 600,
+          "avg": 1.09,
+          "p50": 1.01,
+          "p95": 2.01,
+          "max": 8.81,
+          "under_target_pct": 100.0
+        },
+        "stream_accuracy": 100.0
+      }
+    ]
+  }
+}

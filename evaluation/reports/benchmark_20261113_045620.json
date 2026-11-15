@@ -1,0 +1,170 @@
+{
+  "time": "2026-11-13T04:55:58",
+  "model": "Từ ngữ: MLP (test acc 100.00%)",
+  "accuracy": {
+    "samples": 198,
+    "accuracy": 100.0,
+    "f1_macro": 100.0,
+    "mean_confidence": 99.28,
+    "api_latency_ms": {
+      "count": 198,
+      "avg": 3.75,
+      "p50": 3.23,
+      "p95": 6.0,
+      "max": 37.33,
+      "under_target_pct": 100.0
+    },
+    "per_class": {
+      "CAM_ON": {
+        "precision": 100.0,
+        "recall": 100.0,
+        "f1": 100.0
+      },
+      "CHO_MOT_CHUT": {
+        "precision": 100.0,
+        "recall": 100.0,
+        "f1": 100.0
+      },
+      "DAU": {
+        "precision": 100.0,
+        "recall": 100.0,
+        "f1": 100.0
+      },
+      "DONG_Y": {
+        "precision": 100.0,
+        "recall": 100.0,
+        "f1": 100.0
+      },
+      "KHAN_CAP": {
+        "precision": 100.0,
+        "recall": 100.0,
+        "f1": 100.0
+      },
+      "KHONG": {
+        "precision": 100.0,
+        "recall": 100.0,
+        "f1": 100.0
+      },
+      "TAM_BIET": {
+        "precision": 100.0,
+        "recall": 100.0,
+        "f1": 100.0
+      },
+      "TOI_CAN_GIUP_DO": {
+        "precision": 100.0,
+        "recall": 100.0,
+        "f1": 100.0
+      },
+      "UONG_NUOC": {
+        "precision": 100.0,
+        "recall": 100.0,
+        "f1": 100.0
+      },
+      "XIN_CHAO": {
+        "precision": 100.0,
+        "recall": 100.0,
+        "f1": 100.0
+      },
+      "XIN_LOI": {
+        "precision": 100.0,
+        "recall": 100.0,
+        "f1": 100.0
+      },
+      "YEU_THUONG": {
+        "precision": 100.0,
+        "recall": 100.0,
+        "f1": 100.0
+      }
+    }
+  },
+  "stream": {
+    "broker": "127.0.0.1:1883",
+    "reconnects": 0,
+    "runs": [
+      {
+        "rate_target_hz": 15.0,
+        "rate_actual_hz": 15.0,
+        "duration_s": 8.0,
+        "sent": 120,
+        "received": 120,
+        "lost": 0,
+        "pdr": 100.0,
+        "e2e_ms": {
+          "count": 120,
+          "avg": 4.63,
+          "p50": 4.35,
+          "p95": 7.52,
+          "max": 10.71,
+          "under_target_pct": 100.0
+        },
+        "rtt_ms": {
+          "count": 120,
+          "avg": 5.96,
+          "p50": 5.54,
+          "p95": 9.58,
+          "max": 14.06,
+          "under_target_pct": 100.0
+        },
+        "uplink_ms": {
+          "count": 120,
+          "avg": 2.88,
+          "p50": 2.56,
+          "p95": 5.01,
+          "max": 7.53,
+          "under_target_pct": 100.0
+        },
+        "cloud_ms": {
+          "count": 120,
+          "avg": 1.75,
+          "p50": 1.98,
+          "p95": 3.01,
+          "max": 4.46,
+          "under_target_pct": 100.0
+        },
+        "stream_accuracy": 98.81
+      },
+      {
+        "rate_target_hz": 50.0,
+        "rate_actual_hz": 50.0,
+        "duration_s": 8.0,
+        "sent": 400,
+        "received": 400,
+        "lost": 0,
+        "pdr": 100.0,
+        "e2e_ms": {
+          "count": 400,
+          "avg": 4.12,
+          "p50": 4.01,
+          "p95": 6.43,
+          "max": 12.64,
+          "under_target_pct": 100.0
+        },
+        "rtt_ms": {
+          "count": 400,
+          "avg": 5.37,
+          "p50": 5.02,
+          "p95": 8.28,
+          "max": 13.65,
+          "under_target_pct": 100.0
+        },
+        "uplink_ms": {
+          "count": 400,
+          "avg": 2.57,
+          "p50": 2.51,
+          "p95": 4.41,
+          "max": 10.78,
+          "under_target_pct": 100.0
+        },
+        "cloud_ms": {
+          "count": 400,
+          "avg": 1.54,
+          "p50": 1.22,
+          "p95": 2.58,
+          "max": 5.01,
+          "under_target_pct": 100.0
+        },
+        "stream_accuracy": 100.0
+      }
+    ]
+  }
+}
